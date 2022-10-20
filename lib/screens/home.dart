@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sendgrid/user_service.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -10,6 +11,26 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _name = TextEditingController();
+  bool _isLoading = false;
+
+  _updateUser() {
+    _isLoading = true;
+    UserService().updateUser(_name.text).then((value) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User Updated successfully!')),
+      );
+    }).catchError((_) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error updating User!')),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +97,13 @@ class _HomeState extends State<Home> {
                 height: 45,
                 width: double.infinity,
                 child: TextButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {}
-                  },
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          if (_formKey.currentState!.validate()) {
+                            _updateUser();
+                          }
+                        },
                   style: ButtonStyle(
                     backgroundColor:
                         MaterialStateProperty.all<Color>(Color(0xff1C4ED8)),
